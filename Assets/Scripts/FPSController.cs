@@ -4,7 +4,7 @@ public class FPSController : MonoBehaviour
 {
   void Start()
   {
-    Application.targetFrameRate = 60;
+    Application.targetFrameRate = -1;
     QualitySettings.vSyncCount = 0;
   }
 }
