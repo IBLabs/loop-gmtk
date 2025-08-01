@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -38,6 +39,14 @@ public class PlayerController : MonoBehaviour
 
     [Header("Effects")]
     [SerializeField] private Transform jumpEffect;
+
+    // Events
+    public static event Action OnJumpStart;
+    public static event Action OnJumpLand;
+
+    // Public properties
+    public bool IsJumping => isJumping;
+    public Vector2 CurrentVelocity => velocity;
 
     private bool isJumping = false;
     private float jumpStartTime;
@@ -96,6 +105,9 @@ public class PlayerController : MonoBehaviour
         isJumping = true;
         jumpStartTime = Time.time;
         startHeight = transform.position.y;
+
+        // Trigger jump start event
+        OnJumpStart?.Invoke();
 
         // Play jump effect if assigned
         if (jumpEffect != null)
@@ -244,6 +256,9 @@ public class PlayerController : MonoBehaviour
             {
                 isJumping = false;
                 normalizedTime = 1f;
+
+                // Trigger jump land event
+                OnJumpLand?.Invoke();
             }
             float curveValue = jumpCurve.Evaluate(normalizedTime);
             float newYValue = Mathf.Lerp(startHeight, startHeight + jumpHeight, curveValue);
