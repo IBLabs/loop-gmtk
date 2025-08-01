@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpHeight = 3f;
     [SerializeField] private float jumpDuration = 0.5f;
     [SerializeField] private AnimationCurve jumpCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private float dazeTime = 0.5f;
 
     [Header("Movement Boundaries")]
     [SerializeField] private string endGoalName = "EndGoal"; // Tag for the end goal object
@@ -55,6 +56,8 @@ public class PlayerController : MonoBehaviour
     private float velocityAtAccelerationStart;
     private float minBoundary;
     private float maxBoundary;
+    private int cactiCount = 0;
+    private float lastUnprickling = -10;
     // private bool clearedFirstLevel = false;
 
     private void OnEnable()
@@ -118,6 +121,10 @@ public class PlayerController : MonoBehaviour
         float deltaTime = Time.deltaTime;
         float currentMaxSpeed = isJumping ? maxSpeed * airMaxSpeedMultiplier : maxSpeed;
         float targetVelocityX = inputVector.x * currentMaxSpeed;
+        if (cactiCount > 0 || (Time.time - lastUnprickling) < dazeTime)
+        {
+            targetVelocityX = 0;
+        }
 
         if (useAcceleration)
         {
@@ -269,6 +276,24 @@ public class PlayerController : MonoBehaviour
             Debug.Log("End goal reached! Level cleared.");
             Destroy(other.gameObject); // Destroy the end goal object
             Destroy(maxXBoundaryLevel1.gameObject); // Destroy the boundary object for level 1
+        }
+        else if (other.name == "Cactus")
+        {
+            Debug.Log("Prickly");
+            cactiCount++;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.name == "Cactus")
+        {
+            Debug.Log("UnPrickly");
+            cactiCount--;
+            if (cactiCount == 0)
+            {
+                lastUnprickling = Time.time;
+            }
         }
     }
 }
