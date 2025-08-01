@@ -10,6 +10,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpDuration = 0.5f;
     [SerializeField] private AnimationCurve jumpCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Movement Boundaries")]
+    [SerializeField] private Transform minXBoundary; // Left boundary (optional - assign a transform)
+    [SerializeField] private Transform maxXBoundary; // Right boundary (optional - assign a transform)
+    [SerializeField] private float playerWidth = 1f; // Width of the player to prevent wall clipping
+
     [Header("Horizontal Movement")]
     [SerializeField] private float maxSpeed = 5f;
     [SerializeField] private float accelerationTime = 0.5f;
@@ -216,6 +221,19 @@ public class PlayerController : MonoBehaviour
         Vector3 newPosition = transform.position;
 
         newPosition.x += velocity.x * Time.deltaTime;
+
+        // Apply movement boundaries
+        float halfPlayerWidth = playerWidth * 0.5f;
+        if (minXBoundary != null)
+        {
+            float minX = minXBoundary.position.x + halfPlayerWidth;
+            newPosition.x = Mathf.Max(newPosition.x, minX);
+        }
+        if (maxXBoundary != null)
+        {
+            float maxX = maxXBoundary.position.x - halfPlayerWidth;
+            newPosition.x = Mathf.Min(newPosition.x, maxX);
+        }
 
         if (isJumping)
         {
