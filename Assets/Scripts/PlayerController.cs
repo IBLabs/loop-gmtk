@@ -267,6 +267,8 @@ public class PlayerController : MonoBehaviour
             // clearedFirstLevel = true;
             maxBoundary = maxXBoundaryLevel2 != null ? maxXBoundaryLevel2.position.x - (playerWidth * 0.5f) : float.PositiveInfinity;
             Debug.Log("End goal reached! Level cleared.");
+            Destroy(other.gameObject); // Destroy the end goal object
+            Destroy(maxXBoundaryLevel1.gameObject); // Destroy the boundary object for level 1
         }
     }
 }
