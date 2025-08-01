@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private AnimationCurve jumpCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Movement Boundaries")]
+    [SerializeField] private string endGoalName = "EndGoal"; // Tag for the end goal object
     [SerializeField] private Transform minXBoundary; // Left boundary (optional - assign a transform)
     [SerializeField] private Transform maxXBoundary; // Right boundary (optional - assign a transform)
     [SerializeField] private float playerWidth = 1f; // Width of the player to prevent wall clipping
@@ -51,10 +52,14 @@ public class PlayerController : MonoBehaviour
     private bool isAccelerating = false;
     private bool isDecelerating = false;
     private float velocityAtAccelerationStart;
+    private float minBoundary;
+    private float maxBoundary;
+    private bool clearedFirstLevel = false;
 
     private void OnEnable()
     {
         jumpAction.action?.Enable();
+        
         moveAction.action?.Enable();
     }
 
@@ -70,6 +75,8 @@ public class PlayerController : MonoBehaviour
         Vector3 startPos = transform.position;
         startPos.y = baseHeight;
         transform.position = startPos;
+        minBoundary = minXBoundary != null ? minXBoundary.position.x + (playerWidth * 0.5f) : float.NegativeInfinity;
+        maxBoundary = maxXBoundary != null ? maxXBoundary.position.x - (playerWidth * 0.5f) : float.PositiveInfinity;
     }
 
     private void Update()
@@ -226,13 +233,11 @@ public class PlayerController : MonoBehaviour
         float halfPlayerWidth = playerWidth * 0.5f;
         if (minXBoundary != null)
         {
-            float minX = minXBoundary.position.x + halfPlayerWidth;
-            newPosition.x = Mathf.Max(newPosition.x, minX);
+            newPosition.x = Mathf.Max(newPosition.x, minBoundary);
         }
         if (maxXBoundary != null)
         {
-            float maxX = maxXBoundary.position.x - halfPlayerWidth;
-            newPosition.x = Mathf.Min(newPosition.x, maxX);
+            newPosition.x = Mathf.Min(newPosition.x, maxBoundary);
         }
 
         if (isJumping)
@@ -255,5 +260,16 @@ public class PlayerController : MonoBehaviour
         }
 
         transform.position = newPosition;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Collided with: " + other.name);
+        if (other.name == endGoalName)
+        {
+            clearedFirstLevel = true;
+            maxBoundary = maxBoundary * 2;
+            Debug.Log("End goal reached! Level cleared.");
+        }
     }
 }
